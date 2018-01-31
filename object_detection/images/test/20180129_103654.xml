@@ -1,0 +1,26 @@
+<annotation>
+	<folder>data compressed</folder>
+	<filename>20180129_103654.jpg</filename>
+	<path>/host/Users/big_2/Desktop/data compressed/20180129_103654.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>816</width>
+		<height>459</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>farmhouse-sweetsandwich-almond</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>214</xmin>
+			<ymin>197</ymin>
+			<xmax>458</xmax>
+			<ymax>406</ymax>
+		</bndbox>
+	</object>
+</annotation>

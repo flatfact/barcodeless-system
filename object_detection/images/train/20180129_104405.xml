@@ -1,0 +1,26 @@
+<annotation>
+	<folder>data compressed</folder>
+	<filename>20180129_104405.jpg</filename>
+	<path>/host/Users/big_2/Desktop/data compressed/20180129_104405.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>816</width>
+		<height>459</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>farmhouse-bread-butter</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>65</xmin>
+			<ymin>254</ymin>
+			<xmax>303</xmax>
+			<ymax>453</ymax>
+		</bndbox>
+	</object>
+</annotation>

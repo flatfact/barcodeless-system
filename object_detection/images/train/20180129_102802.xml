@@ -1,0 +1,26 @@
+<annotation>
+	<folder>data compressed</folder>
+	<filename>20180129_102802.jpg</filename>
+	<path>C:\Users\big_2\Desktop\data compressed\20180129_102802.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>816</width>
+		<height>459</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>collon-matcha</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>269</xmin>
+			<ymin>220</ymin>
+			<xmax>420</xmax>
+			<ymax>399</ymax>
+		</bndbox>
+	</object>
+</annotation>

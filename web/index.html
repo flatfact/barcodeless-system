@@ -1,0 +1,193 @@
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+	    crossorigin="anonymous">
+	<link href="https://fonts.googleapis.com/css?family=Kanit" rel="stylesheet">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<style>
+		body {
+			font-family: 'Kanit', sans-serif;
+			background-color: #4fc3f7;
+		}
+
+		#video {
+			background-color: grey;
+		}
+
+		.result {
+			float: left;
+			padding: 24px;
+			width: 600px;
+			position: relative;
+			height: 480px;
+		}
+
+		#snap {
+			margin: auto;
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);	
+		}
+
+		#processed {
+			display: none;
+		}
+
+		.ui {
+			position: absolute;
+			top: 50%;
+  			left: 50%;
+  			transform: translate(-50%, -50%);			
+			padding: 22px;
+			background-color: white;
+			display: -webkit-inline-box;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="modal fade" id="notfound" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">ขออภัย ไม่พบสินค้า</h5>
+				</div>
+				<div class="modal-body">
+					กรุณาลองอีกครั้ง
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary" onclick="location.reload();">ลองใหม่</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<h1>Barcodeless System V.0.1 A</h1>
+	<div class="ui">
+		
+		<div id="container">
+			<video autoplay="true" id="video" style="float:left">
+			</video>
+
+			<canvas id="canvas" width="640" height="480" style="float:left"></canvas>
+		</div>
+		<div class="result" style="background-color:#fafafa">
+			<button type="button" class="btn btn-primary btn-lg" id="snap">คิดเงิน</button>
+			<div id="processed">
+				<br>
+				<br>
+				<h3>สินค้าที่พบ</h3>
+				<p id="processing" style="display:none;">กำลังประมวลผล</p>
+				<table class="table">
+					<thead>
+						<tr>
+							<th scope="col">#</th>
+							<th scope="col">ชื่อสินค้า</th>
+							<th scope="col">ราคา</th>
+							<th scope="col">รหัส</th>
+						</tr>
+					</thead>
+					<tbody id="tbody">
+
+					</tbody>
+				</table>
+				<button type="button" class="btn btn-success btn-lg">ถูกต้อง</button>
+				<button type="button" class="btn btn-danger btn-lg" style="margin-left: 12px;">ลองใหม่ </button>
+			</div>
+		</div>
+	</div>
+
+	</div>
+
+
+</body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+    crossorigin="anonymous"></script>
+<script>
+	var xhr = new XMLHttpRequest({
+		mozSystem: true
+	});
+	$("#canvas").hide()
+	var video = document.getElementById('video');
+	if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+		navigator.mediaDevices.getUserMedia({
+			video: true
+		}).then(function (stream) {
+			video.src = window.URL.createObjectURL(stream);
+			video.play();
+		});
+	}
+	var canvas = document.getElementById('canvas');
+	var context = canvas.getContext('2d');
+	$("#snap").click(function () {
+		$("#processing").fadeIn(200)
+		$("#canvas").show();
+		context.drawImage(video, 0, 0, 640, 480);
+		uri = canvas.toDataURL("image/jpeg").split(',')[1]
+		console.log(canvas.toDataURL("image/jpeg"));
+		console.log(uri);
+		$("#video").hide();
+		video.src = null;
+		$("#snap").fadeOut(200);
+
+		topost = {
+			"uri": uri
+		};
+		console.log(topost)
+		$.ajax({
+			url: 'http://localhost:5000/api/alpha',
+			type: 'POST',
+			dataType: 'json',
+			contentType: "application/json",
+			success: function (data) {
+				$("#processing").fadeOut(200)
+				$("#processed").fadeIn(200);
+				var result = data["result"]
+				console.log(result)
+				if (result.length != 0) {
+					$.getJSON("db.json", function (db) {
+						db = db["database"][0]
+						for (var i = 0; i < result.length; i++) {
+							id = result[i]["item"]
+							num = i + 1
+							$("#tbody").append('<tr><th scope="row">' + num + '</th><td>' + db[id]["name"] + '</td><td>' + db[id][
+								"price"
+							] + '</td><td>' + db[id]["barcode"] + '</td></tr>')
+							console.log(result[i]);
+						}
+					});
+				} else {
+					console.log("empty result")
+					$('#notfound').modal('show')
+				}
+
+			},
+			fail: function () {
+				console.log("error occured")
+			},
+			data: JSON.stringify(topost)
+		});
+	});
+</script>
+
+<script src="https://www.gstatic.com/firebasejs/4.9.1/firebase.js"></script>
+<script>
+	// Initialize Firebase
+	var config = {
+		apiKey: "AIzaSyCBqA9dgj0977iVnq-ES7jMjV-OjQI6WKo",
+		authDomain: "barcodeless-system.firebaseapp.com",
+		databaseURL: "https://barcodeless-system.firebaseio.com",
+		projectId: "barcodeless-system",
+		storageBucket: "barcodeless-system.appspot.com",
+		messagingSenderId: "1026646308125"
+	};
+	firebase.initializeApp(config);
+</script>
+
+
+</html>

@@ -1,0 +1,69 @@
+{  
+  "database":[  
+     {  
+        "farmhouse-bread-butter":{  
+           "name":"ขนมปังฟาร์มเฮาส์ หน้าเนย-น้ำตาล",
+           "price":"12",
+           "barcode":"000000000000",
+           "manufacture":"Farm House"
+
+        },
+        "farmhouse-sweetsandwich-almond":{  
+           "name":"ขนมปังฟาร์มเฮาส์ แซนด์วิชไส้ครีมอัลมอนด์",
+           "price":"10",
+           "barcode":"000000000000",
+           "manufacture":"Farm House"
+
+        },
+        "farmhouse-bread-pandan":{  
+           "name":"ขนมปังฟาร์มเฮาส์ หน้าสังขยา",
+           "price":"10",
+           "barcode":"000000000000",
+           "manufacture":"Farm House"
+
+        },
+        "collon-matcha":{  
+           "name":"Collon ไส้มัทชะ",
+           "price":"15",
+           "barcode":"000000000000",
+           "manufacture":"Kuliko"
+
+        },
+        "lays-bbq":{  
+           "name":"Lays กลิ่น BBQ",
+           "price":"20",
+           "barcode":"000000000000",
+           "manufacture":"Pepsi Co"
+
+        },
+        "lays-onion":{  
+           "name":"Lays กลิ่นหัวหอม",
+           "price":"20",
+           "barcode":"000000000000",
+           "manufacture":"Pepsi Co"
+
+        },
+        "collon-strawberry":{  
+           "name":"collon-strawberry",
+           "price":"15",
+           "barcode":"000000000000",
+           "manufacture":"Kuliko"
+
+        },
+        "farmhouse-sweetsandwich-chocolate":{  
+           "name":"ขนมปังฟาร์มเฮาส์ แซนด์วิชไส้ครีมช็อกโกแลต",
+           "price":"12",
+           "barcode":"000000000000",
+           "manufacture":"Farm House"
+
+        },
+        "paprika":{  
+           "name":"Paprika",
+           "price":"20",
+           "barcode":"000000000000",
+           "manufacture":"Good Food Inc"
+
+        }
+     }
+  ]
+}

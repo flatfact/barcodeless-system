@@ -5,6 +5,7 @@
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
 	    crossorigin="anonymous">
 	<link href="https://fonts.googleapis.com/css?family=Kanit" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<style>
 		body {
@@ -14,6 +15,13 @@
 
 		#video {
 			background-color: grey;
+		}
+
+		#canvas {
+			float: left;
+			transform: scale(0.5);
+			position: absolute;
+			transform-origin: top left;
 		}
 
 		.result {
@@ -29,7 +37,7 @@
 			position: absolute;
 			top: 50%;
 			left: 50%;
-			transform: translate(-50%, -50%);	
+			transform: translate(-50%, -50%);
 		}
 
 		#processed {
@@ -39,11 +47,23 @@
 		.ui {
 			position: absolute;
 			top: 50%;
-  			left: 50%;
-  			transform: translate(-50%, -50%);			
+			left: 50%;
+			transform: translate(-50%, -50%);
 			padding: 22px;
 			background-color: white;
 			display: -webkit-inline-box;
+		}
+
+		#container {
+			width: 640px;
+		}
+
+		.table>tbody>tr>td {
+			vertical-align: middle;
+		}
+
+		.table>tbody>tr>th {
+			vertical-align: middle;
 		}
 	</style>
 </head>
@@ -65,13 +85,14 @@
 		</div>
 	</div>
 	<h1>Barcodeless System V.0.1 A</h1>
+	<video autoplay="true" id="footage" style="display:none;" width="1000"></video>
 	<div class="ui">
-		
-		<div id="container">
-			<video autoplay="true" id="video" style="float:left">
-			</video>
 
-			<canvas id="canvas" width="640" height="480" style="float:left"></canvas>
+		<div id="container">
+			<video autoplay="true" id="video" style="float:left; object-fit: cover;" width="640"></video>
+
+
+			<canvas id="canvas" width="1280" height="960"></canvas>
 		</div>
 		<div class="result" style="background-color:#fafafa">
 			<button type="button" class="btn btn-primary btn-lg" id="snap">คิดเงิน</button>
@@ -87,6 +108,7 @@
 							<th scope="col">ชื่อสินค้า</th>
 							<th scope="col">ราคา</th>
 							<th scope="col">รหัส</th>
+							<th scope="col"></th>
 						</tr>
 					</thead>
 					<tbody id="tbody">
@@ -108,12 +130,25 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/js/bootstrap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
     crossorigin="anonymous"></script>
+<script src='node_modules/google-material-color/dist/palette.js'></script>
+
+
 <script>
+	color = ["Red", "Blue", "Cyan", "Green", "Yellow", "Orange", "Brown", "Grey"]
 	var xhr = new XMLHttpRequest({
 		mozSystem: true
 	});
 	$("#canvas").hide()
-	var video = document.getElementById('video');
+	var video_preview = document.getElementById('video');
+	if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+		navigator.mediaDevices.getUserMedia({
+			video: true
+		}).then(function (stream) {
+			video_preview.src = window.URL.createObjectURL(stream);
+			video.play();
+		});
+	}
+	var video = document.getElementById('footage');
 	if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
 		navigator.mediaDevices.getUserMedia({
 			video: true
@@ -124,21 +159,35 @@
 	}
 	var canvas = document.getElementById('canvas');
 	var context = canvas.getContext('2d');
+	var resultlist = [];
+
+	function del(i) {
+		var xmin = resultlist[i]["xmin"];
+		var xmax = resultlist[i]["xmax"];
+		var ymin = resultlist[i]["ymin"];
+		var ymax = resultlist[i]["ymax"];
+		var xco = (xmin) * 1280
+		var yco = (ymin) * 960
+		var width = (xmax - xmin) * 1280;
+		var height = (ymax - ymin) * 960;
+		context.clearRect(xco, yco, width, height);
+		$("#row" + i).remove();
+		delete resultlist[i]
+		console.log(resultlist)
+	}
 	$("#snap").click(function () {
 		$("#processing").fadeIn(200)
 		$("#canvas").show();
-		context.drawImage(video, 0, 0, 640, 480);
+		context.drawImage(video, 0, 0, 1280, 960);
 		uri = canvas.toDataURL("image/jpeg").split(',')[1]
-		console.log(canvas.toDataURL("image/jpeg"));
-		console.log(uri);
 		$("#video").hide();
-		video.src = null;
+		video_preview.src = null;
 		$("#snap").fadeOut(200);
 
 		topost = {
 			"uri": uri
 		};
-		console.log(topost)
+
 		$.ajax({
 			url: 'http://localhost:5000/api/alpha',
 			type: 'POST',
@@ -150,16 +199,38 @@
 				var result = data["result"]
 				console.log(result)
 				if (result.length != 0) {
+
 					$.getJSON("db.json", function (db) {
 						db = db["database"][0]
 						for (var i = 0; i < result.length; i++) {
 							id = result[i]["item"]
 							num = i + 1
-							$("#tbody").append('<tr><th scope="row">' + num + '</th><td>' + db[id]["name"] + '</td><td>' + db[id][
-								"price"
-							] + '</td><td>' + db[id]["barcode"] + '</td></tr>')
-							console.log(result[i]);
+							$("#tbody").append('<tr id="row' + i + '"><th scope="row">' + num + '</th><td>' + db[id]["name"] +
+								'</td><td>' + db[id][
+									"price"
+								] + '</td><td>' + db[id]["barcode"] +
+								'</td><td><button type="button" class="btn btn-danger" onclick="del(' + i +
+								')"><i class="material-icons">delete_forever</i></button></td></tr>'
+							)
+							resultlist.push(result[i])
+
+							var xmin = result[i]["xmin"];
+							var xmax = result[i]["xmax"];
+							var ymin = result[i]["ymin"];
+							var ymax = result[i]["ymax"];
+							var xco = (xmin) * 1280
+							var yco = (ymin) * 960
+							var width = (xmax - xmin) * 1280;
+							var height = (ymax - ymin) * 960;
+							console.log("width: " + width + "\nheight: " + height + "\nxco: " + xco + "\nyco: " + yco)
+							var randcol = palette.get(color[i % 7], '600');
+							context.strokeStyle = randcol;
+							context.lineWidth = 10;
+							console.log(randcol);
+							context.strokeRect(xco, yco, width, height);
+
 						}
+
 					});
 				} else {
 					console.log("empty result")

@@ -32,7 +32,7 @@
 			height: 480px;
 		}
 
-		#snap {
+		.snap1 {
 			margin: auto;
 			position: absolute;
 			top: 50%;
@@ -65,6 +65,11 @@
 		.table>tbody>tr>th {
 			vertical-align: middle;
 		}
+
+		#tablecontainer {
+			height: 250px;
+			overflow-y: auto;
+		}
 	</style>
 </head>
 
@@ -84,7 +89,23 @@
 			</div>
 		</div>
 	</div>
-	<h1>Barcodeless System V.0.1 A</h1>
+	<div class="modal fade" id="total" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title">สรุปยอดสินค้า</h5>
+					</div>
+					<div class="modal-body">
+						<h3 style="text-align: center;" id="net"></h3>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-primary">บันทึก</button>
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">ปิดหน้าต่าง</button>
+					</div>
+				</div>
+			</div>
+		</div>	
+	<h1>Barcodeless System V.0.2 A</h1>
 	<video autoplay="true" id="footage" style="display:none;" width="1000"></video>
 	<div class="ui">
 
@@ -95,29 +116,37 @@
 			<canvas id="canvas" width="1280" height="960"></canvas>
 		</div>
 		<div class="result" style="background-color:#fafafa">
-			<button type="button" class="btn btn-primary btn-lg" id="snap">คิดเงิน</button>
+			<button type="button" class="btn btn-primary btn-lg snap1" id="snap">คิดเงิน</button>
 			<div id="processed">
 				<br>
 				<br>
 				<h3>สินค้าที่พบ</h3>
-				<p id="processing" style="display:none;">กำลังประมวลผล</p>
-				<table class="table">
-					<thead>
-						<tr>
-							<th scope="col">#</th>
-							<th scope="col">ชื่อสินค้า</th>
-							<th scope="col">ราคา</th>
-							<th scope="col">รหัส</th>
-							<th scope="col"></th>
-						</tr>
-					</thead>
-					<tbody id="tbody">
+				<br>
+				<div id="tablecontainer">
+					<table class="table">
+						<thead>
+							<tr>
+								<th scope="col">#</th>
+								<th scope="col">ชื่อสินค้า</th>
+								<th scope="col">ราคา</th>
+								<th scope="col">รหัส</th>
+								<th scope="col"></th>
+							</tr>
+						</thead>
+						<tbody id="tbody">
 
-					</tbody>
-				</table>
-				<button type="button" class="btn btn-success btn-lg">ถูกต้อง</button>
-				<button type="button" class="btn btn-danger btn-lg" style="margin-left: 12px;">ลองใหม่ </button>
+						</tbody>
+					</table>
+
+				</div>
+				<br>
+				<button type="button" id="done" class="btn btn-success btn-lg">เสร็จสิ้น</button>
+				<button type="button" id="additem" class="btn btn-warning btn-lg" style="margin-left: 12px;">เพิ่มสินค้า</button>
+				<button type="button" id="sendtoapi" onclick="process()" class="btn btn-warning btn-lg" style="margin-left: 12px; display:none;">คิดเงิน</button>
+				<button type="button" class="btn btn-danger btn-lg" style="margin-left: 12px;">ล้างทั้งหมด </button>
 			</div>
+			
+			<p id="processing" style="display:none;">กำลังประมวลผล</p>			
 		</div>
 	</div>
 
@@ -134,6 +163,13 @@
 
 
 <script>
+	var first = true;
+	// Array Remove - By John Resig (MIT Licensed)
+	Array.prototype.remove = function (from, to) {
+		var rest = this.slice((to || from) + 1 || this.length);
+		this.length = from < 0 ? this.length + from : from;
+		return this.push.apply(this, rest);
+	};
 	color = ["Red", "Blue", "Cyan", "Green", "Yellow", "Orange", "Brown", "Grey"]
 	var xhr = new XMLHttpRequest({
 		mozSystem: true
@@ -160,33 +196,100 @@
 	var canvas = document.getElementById('canvas');
 	var context = canvas.getContext('2d');
 	var resultlist = [];
+	var scene = []
 
 	function del(i) {
-		var xmin = resultlist[i]["xmin"];
-		var xmax = resultlist[i]["xmax"];
-		var ymin = resultlist[i]["ymin"];
-		var ymax = resultlist[i]["ymax"];
-		var xco = (xmin) * 1280
-		var yco = (ymin) * 960
-		var width = (xmax - xmin) * 1280;
-		var height = (ymax - ymin) * 960;
-		context.clearRect(xco, yco, width, height);
+		context.clearRect(0, 0, canvas.width, canvas.height);
 		$("#row" + i).remove();
-		delete resultlist[i]
+		resultlist.remove(i)
 		console.log(resultlist)
+		render()
 	}
-	$("#snap").click(function () {
-		$("#processing").fadeIn(200)
+
+	function render() {
+		$("#tbody").empty()
+		$.getJSON("db.json", function (db) {
+			db = db["database"][0]
+			for (var i = 0; i < resultlist.length; i++) {
+				id = resultlist[i]["item"]
+				num = i + 1
+
+				$("#tbody").append('<tr id="row' + i + '"><th scope="row">' + num + '</th><td>' + db[id]["name"] +
+					'</td><td>' + db[id][
+						"price"
+					] + '</td><td>' + db[id]["barcode"] +
+					'</td><td><button type="button" class="btn btn-danger" onclick="del(' + i +
+					')"><i class="material-icons">delete_forever</i></button></td></tr>'
+				)
+			}
+			for (var i = 0; i < scene.length; i++) {
+				var xmin = scene[i]["xmin"];
+				var xmax = scene[i]["xmax"];
+				var ymin = scene[i]["ymin"];
+				var ymax = scene[i]["ymax"];
+				var xco = (xmin) * 1280
+				var yco = (ymin) * 960
+				var width = (xmax - xmin) * 1280;
+				var height = (ymax - ymin) * 960;
+				console.log("width: " + width + "\nheight: " + height + "\nxco: " + xco + "\nyco: " + yco)
+				var randcol = palette.get(color[i % 7], '600');
+				context.strokeStyle = randcol;
+				context.lineWidth = 10;
+				console.log(randcol);
+				context.strokeRect(xco, yco, width, height);
+
+
+			}
+
+		});
+	}
+	$("#sendtoapi").click(function(){
+		$("#sendtoapi").hide();
+		$("#additem").show();
+		$("#additem").prop('disabled', true);
+	});
+	$("#additem").click(function () {
+		$("#additem").hide();
+		$("#sendtoapi").show();
+		context.clearRect(0, 0, canvas.width, canvas.height);
+		$("#canvas").hide();
+		$("#video").show();
+		var video_preview = document.getElementById('video');
+		if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+			navigator.mediaDevices.getUserMedia({
+				video: true
+			}).then(function (stream) {
+				video_preview.src = window.URL.createObjectURL(stream);
+				video.play();
+			});
+		}
+		var video = document.getElementById('footage');
+		if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+			navigator.mediaDevices.getUserMedia({
+				video: true
+			}).then(function (stream) {
+				video.src = window.URL.createObjectURL(stream);
+				video.play();
+			});
+		}
+	});
+
+	function process() {
+		$("#processing").show();
+		$("#video").hide();
 		$("#canvas").show();
 		context.drawImage(video, 0, 0, 1280, 960);
+		var saved = canvas.toDataURL("image/jpeg");
+
+		$("#canvas").css("background-image", "url('" + saved + "')");
 		uri = canvas.toDataURL("image/jpeg").split(',')[1]
-		$("#video").hide();
 		video_preview.src = null;
 		$("#snap").fadeOut(200);
 
 		topost = {
 			"uri": uri
 		};
+		console.log("processing")
 
 		$.ajax({
 			url: 'http://localhost:5000/api/alpha',
@@ -194,55 +297,54 @@
 			dataType: 'json',
 			contentType: "application/json",
 			success: function (data) {
+				$("#additem").prop('disabled', false);
 				$("#processing").fadeOut(200)
 				$("#processed").fadeIn(200);
 				var result = data["result"]
 				console.log(result)
 				if (result.length != 0) {
+					first = false;
+					scene = [];
+					for (var i = 0; i < result.length; i++) {
+						resultlist.push(result[i]);
+						scene.push(result[i])
+					}
+					render();
 
-					$.getJSON("db.json", function (db) {
-						db = db["database"][0]
-						for (var i = 0; i < result.length; i++) {
-							id = result[i]["item"]
-							num = i + 1
-							$("#tbody").append('<tr id="row' + i + '"><th scope="row">' + num + '</th><td>' + db[id]["name"] +
-								'</td><td>' + db[id][
-									"price"
-								] + '</td><td>' + db[id]["barcode"] +
-								'</td><td><button type="button" class="btn btn-danger" onclick="del(' + i +
-								')"><i class="material-icons">delete_forever</i></button></td></tr>'
-							)
-							resultlist.push(result[i])
-
-							var xmin = result[i]["xmin"];
-							var xmax = result[i]["xmax"];
-							var ymin = result[i]["ymin"];
-							var ymax = result[i]["ymax"];
-							var xco = (xmin) * 1280
-							var yco = (ymin) * 960
-							var width = (xmax - xmin) * 1280;
-							var height = (ymax - ymin) * 960;
-							console.log("width: " + width + "\nheight: " + height + "\nxco: " + xco + "\nyco: " + yco)
-							var randcol = palette.get(color[i % 7], '600');
-							context.strokeStyle = randcol;
-							context.lineWidth = 10;
-							console.log(randcol);
-							context.strokeRect(xco, yco, width, height);
-
-						}
-
-					});
 				} else {
 					console.log("empty result")
-					$('#notfound').modal('show')
+					if(first == true){
+						$('#notfound').modal('show');
+					}
+					else{
+						$("#sendtoapi").hide();
+						$("#additem").show();
+					}
 				}
 
 			},
 			fail: function () {
-				console.log("error occured")
+				console.log("error occured");
 			},
 			data: JSON.stringify(topost)
 		});
+	}
+	$("#snap").click(function () {
+		process();
+	});
+	$("#done").click(function(){
+		$('#total').modal('show');		
+		
+		$.getJSON("db.json", function (db) {
+			db = db["database"][0]
+			var totalprice = 0;
+			for (var i = 0; i < resultlist.length; i++){
+				id = resultlist[i]["item"]
+				totalprice = totalprice+parseInt(db[id]["price"])
+			}
+			$("#net").text("ราคาสุทธิ "+ totalprice +" บาท");
+		});
+		
 	});
 </script>
 

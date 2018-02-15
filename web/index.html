@@ -14,22 +14,21 @@
 		}
 
 		#video {
-			background-color: grey;
+			position: relative;
 		}
 
 		#canvas {
-			float: left;
 			transform: scale(0.5);
 			position: absolute;
 			transform-origin: top left;
 		}
 
 		.result {
-			float: left;
 			padding: 24px;
-			width: 600px;
+			width: 100%;
 			position: relative;
-			height: 480px;
+			max-height: 480px;
+			height: 100%;
 		}
 
 		.snap1 {
@@ -45,17 +44,18 @@
 		}
 
 		.ui {
-			position: absolute;
-			top: 50%;
-			left: 50%;
-			transform: translate(-50%, -50%);
 			padding: 22px;
 			background-color: white;
-			display: -webkit-inline-box;
+			width: 100%;
+			max-width: 1400px;
+			transform: translateY(-50%);
+			top: 50%;
+			margin: auto;
+			position: relative;
 		}
 
 		#container {
-			width: 640px;
+			width: 100%;
 		}
 
 		.table>tbody>tr>td {
@@ -74,6 +74,7 @@
 </head>
 
 <body>
+
 	<div class="modal fade" id="notfound" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
@@ -89,72 +90,59 @@
 			</div>
 		</div>
 	</div>
-	<div class="modal fade" id="total" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-			<div class="modal-dialog" role="document">
-				<div class="modal-content">
-					<div class="modal-header">
-						<h5 class="modal-title">สรุปยอดสินค้า</h5>
-					</div>
-					<div class="modal-body">
-						<h3 style="text-align: center;" id="net"></h3>
-					</div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-primary">บันทึก</button>
-						<button type="button" class="btn btn-secondary" data-dismiss="modal">ปิดหน้าต่าง</button>
-					</div>
-				</div>
-			</div>
-		</div>	
-	<h1>Barcodeless System V.0.2 A</h1>
+
 	<video autoplay="true" id="footage" style="display:none;" width="1000"></video>
-	<div class="ui">
-
-		<div id="container">
-			<video autoplay="true" id="video" style="float:left; object-fit: cover;" width="640"></video>
-
-
-			<canvas id="canvas" width="1280" height="960"></canvas>
-		</div>
-		<div class="result" style="background-color:#fafafa">
-			<button type="button" class="btn btn-primary btn-lg snap1" id="snap">คิดเงิน</button>
-			<div id="processed">
-				<br>
-				<br>
-				<h3>สินค้าที่พบ</h3>
-				<br>
-				<div id="tablecontainer">
-					<table class="table">
-						<thead>
-							<tr>
-								<th scope="col">#</th>
-								<th scope="col">ชื่อสินค้า</th>
-								<th scope="col">ราคา</th>
-								<th scope="col">รหัส</th>
-								<th scope="col"></th>
-							</tr>
-						</thead>
-						<tbody id="tbody">
-
-						</tbody>
-					</table>
-
-				</div>
-				<br>
-				<button type="button" id="done" class="btn btn-success btn-lg">เสร็จสิ้น</button>
-				<button type="button" id="additem" class="btn btn-warning btn-lg" style="margin-left: 12px;">เพิ่มสินค้า</button>
-				<button type="button" id="sendtoapi" onclick="process()" class="btn btn-warning btn-lg" style="margin-left: 12px; display:none;">คิดเงิน</button>
-				<button type="button" class="btn btn-danger btn-lg" style="margin-left: 12px;">ล้างทั้งหมด </button>
+	<div class="ui rounded">
+		<div class="row" style="width: 100%; margin:0; padding:0;">
+			<div class="col-md-6" style="height:480px; padding:0; overflow: auto;">
+				<video autoplay="true" id="video"></video>
+				<canvas id="canvas" width="1280" height="960"></canvas>
 			</div>
-			
-			<p id="processing" style="display:none;">กำลังประมวลผล</p>			
+			<div class="col-md-6" style="padding:0;">
+				<div class="result">
+					<button type="button" class="btn btn-primary btn-lg snap1" id="snap">คิดเงิน</button>
+					<div id="processed">
+						<br>
+						<br>
+						<h3 id="displayprice">สินค้าที่พบ</h3>
+						<br>
+						<div id="tablecontainer">
+							<table class="table">
+								<thead>
+									<tr>
+										<th scope="col">#</th>
+										<th scope="col">ชื่อสินค้า</th>
+										<th scope="col">ราคา</th>
+										<th scope="col">รหัส</th>
+										<th scope="col"></th>
+									</tr>
+								</thead>
+								<tbody id="tbody">
+
+								</tbody>
+							</table>
+
+						</div>
+						<br>
+						<button type="button" id="done" class="btn btn-success btn-lg">เสร็จสิ้น</button>
+						<button type="button" id="additem" class="btn btn-warning btn-lg" style="margin-left: 12px;">เพิ่มสินค้า</button>
+						<button type="button" id="sendtoapi" class="btn btn-warning btn-lg" style="margin-left: 12px; display:none;">คิดเงิน</button>
+						<button type="button" class="btn btn-danger btn-lg" style="margin-left: 12px;">ล้างทั้งหมด </button>
+					</div>
+
+					<p id="processing" style="display:none;">กำลังประมวลผล</p>
+				</div>
+
+			</div>
 		</div>
+
+
 	</div>
 
 	</div>
 
 
 </body>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/js/bootstrap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
@@ -163,6 +151,21 @@
 
 
 <script>
+	
+	var db = (function () {
+		var db = null;
+		$.ajax({
+			'async': false,
+			'global': false,
+			'url': 'db.json',
+			'dataType': "json",
+			'success': function (data) {
+				db = data;
+			}
+		});
+		return db;
+	})();
+	db = db["database"][0]
 	var first = true;
 	// Array Remove - By John Resig (MIT Licensed)
 	Array.prototype.remove = function (from, to) {
@@ -198,52 +201,55 @@
 	var resultlist = [];
 	var scene = []
 
-	function del(i) {
-		context.clearRect(0, 0, canvas.width, canvas.height);
-		$("#row" + i).remove();
-		resultlist.remove(i)
-		console.log(resultlist)
-		render()
-	}
+
+
 
 	function render() {
 		$("#tbody").empty()
-		$.getJSON("db.json", function (db) {
-			db = db["database"][0]
-			for (var i = 0; i < resultlist.length; i++) {
-				id = resultlist[i]["item"]
-				num = i + 1
+		for (var i = 0; i < resultlist.length; i++) {
+			id = resultlist[i]["item"]
+			num = i + 1
 
-				$("#tbody").append('<tr id="row' + i + '"><th scope="row">' + num + '</th><td>' + db[id]["name"] +
-					'</td><td>' + db[id][
-						"price"
-					] + '</td><td>' + db[id]["barcode"] +
-					'</td><td><button type="button" class="btn btn-danger" onclick="del(' + i +
-					')"><i class="material-icons">delete_forever</i></button></td></tr>'
-				)
-			}
-			for (var i = 0; i < scene.length; i++) {
-				var xmin = scene[i]["xmin"];
-				var xmax = scene[i]["xmax"];
-				var ymin = scene[i]["ymin"];
-				var ymax = scene[i]["ymax"];
-				var xco = (xmin) * 1280
-				var yco = (ymin) * 960
-				var width = (xmax - xmin) * 1280;
-				var height = (ymax - ymin) * 960;
-				console.log("width: " + width + "\nheight: " + height + "\nxco: " + xco + "\nyco: " + yco)
-				var randcol = palette.get(color[i % 7], '600');
-				context.strokeStyle = randcol;
-				context.lineWidth = 10;
-				console.log(randcol);
-				context.strokeRect(xco, yco, width, height);
+			$("#tbody").append('<tr id="row' + i + '"><th scope="row">' + num + '</th><td>' + db[id]["name"] +
+				'</td><td>' + db[id][
+					"price"
+				] + '</td><td>' + db[id]["barcode"] +
+				'</td><td><button onclick="del(' + i +
+				')" type="button" class="btn btn-danger"><i class="material-icons">delete_forever</i></button></td></tr>'
+			)
+		}
+		for (var i = 0; i < scene.length; i++) {
+			var xmin = scene[i]["xmin"];
+			var xmax = scene[i]["xmax"];
+			var ymin = scene[i]["ymin"];
+			var ymax = scene[i]["ymax"];
+			var xco = (xmin) * 1280
+			var yco = (ymin) * 960
+			var width = (xmax - xmin) * 1280;
+			var height = (ymax - ymin) * 960;
+			console.log("width: " + width + "\nheight: " + height + "\nxco: " + xco + "\nyco: " + yco)
+			var randcol = palette.get(color[i % 7], '600');
+			context.strokeStyle = randcol;
+			context.lineWidth = 10;
+			console.log(randcol);
+			context.strokeRect(xco, yco, width, height);
 
 
-			}
+		}
 
-		});
+
 	}
-	$("#sendtoapi").click(function(){
+
+	function totalprice() {
+		var total = 0;
+		for (var i = 0; i < resultlist.length; i++) {
+			id = resultlist[i]["item"]
+			total = total + parseInt(db[id]["price"])
+		}
+		$("#displayprice").text("สินค้าที่พบ ราคารวม: " + total + " บาท");
+		return total;
+	}
+	$("#sendtoapi").click(function () {
 		$("#sendtoapi").hide();
 		$("#additem").show();
 		$("#additem").prop('disabled', true);
@@ -310,13 +316,13 @@
 						scene.push(result[i])
 					}
 					render();
+					totalprice();
 
 				} else {
 					console.log("empty result")
-					if(first == true){
+					if (first == true) {
 						$('#notfound').modal('show');
-					}
-					else{
+					} else {
 						$("#sendtoapi").hide();
 						$("#additem").show();
 					}
@@ -332,20 +338,34 @@
 	$("#snap").click(function () {
 		process();
 	});
-	$("#done").click(function(){
-		$('#total').modal('show');		
-		
-		$.getJSON("db.json", function (db) {
-			db = db["database"][0]
-			var totalprice = 0;
-			for (var i = 0; i < resultlist.length; i++){
-				id = resultlist[i]["item"]
-				totalprice = totalprice+parseInt(db[id]["price"])
-			}
-			$("#net").text("ราคาสุทธิ "+ totalprice +" บาท");
-		});
-		
+	$("#done").click(function () {
+		location.reload();
+
 	});
+	$("#sendtoapi").click(function () {
+		process();
+	});
+
+	function pushdb() {
+		var key = firebase.database().ref().child('saleslog').push().key;
+		firebase.database().ref('saleslog/' + key).set({
+			cart: resultlist,
+			timestamp: firebase.database.ServerValue.TIMESTAMP,
+			totalprice: totalprice()
+		});
+		console.log("done")
+	}
+	$("#done").click(function () {
+		pushdb();
+	});
+	function del(i) {
+		context.clearRect(0, 0, canvas.width, canvas.height);
+		$("#row" + i).remove();
+		resultlist.remove(i)
+		console.log(resultlist)
+		console.log(totalprice())
+		render()
+	}	
 </script>
 
 <script src="https://www.gstatic.com/firebasejs/4.9.1/firebase.js"></script>
